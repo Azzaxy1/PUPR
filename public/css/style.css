@@ -1,0 +1,146 @@
+/* Navbar dengan background putih dan shadow */
+#mainNavbar {
+    background-color: white;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Shadow ringan */
+    padding: 15px 0;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Link dan tombol tetap gelap */
+#mainNavbar .nav-link,
+#mainNavbar .navbar-brand,
+#mainNavbar .btn-outline-dark {
+    color: black;
+    transition: color 0.3s ease-in-out;
+}
+
+#mainNavbar .btn-outline-dark:hover {
+    background-color: #d32f2f;
+    color: white;
+}
+
+.logo-img {
+    height: 40px; /* Ukuran logo default */
+    transition: height 0.3s ease-in-out;
+}
+
+/* Kontainer utama untuk step */
+.d-flex-horizontal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Garis panjang lurus */
+.d-flex-horizontal::before {
+    content: '';
+    position: absolute;
+    width: 65%;
+    height: 2px;
+    background-color: #ccc;
+    top: 37%; /* Garis sejajar di tengah */
+    z-index: 1;
+}
+
+/* Step */
+.step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px; /* Jarak antar langkah */
+}
+
+/* Lingkaran ikon */
+.icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-size: 25px;
+    background-color: white;
+    border: 2px solid #ccc;
+    position: relative;
+    z-index: 2;
+}
+
+footer {
+    background-color: #f8f9fa; /* Warna latar footer */
+}
+
+footer h6 {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+footer img {
+    height: 40px; /* Tinggi logo */
+}
+
+footer ul {
+    padding: 0;
+    list-style: none;
+}
+
+footer ul li {
+    display: inline-block;
+    margin: 0 10px;
+}
+
+footer ul li a {
+    color: #6c757d; /* Warna teks link */
+}
+
+footer ul li a:hover {
+    color: #000; /* Warna teks link saat hover */
+}
+
+footer .bi {
+    color: #6c757d; /* Warna ikon media sosial */
+}
+
+footer .bi:hover {
+    color: #000; /* Warna ikon saat hover */
+}
+
+
+
+/* Responsif: Mobile */
+@media (max-width: 768px) {
+    .d-flex-horizontal {
+        flex-wrap: wrap; /* Membungkus elemen saat tidak muat */
+        gap: 5px; /* Jarak antar elemen saat membungkus */
+    }
+
+    .d-flex-horizontal::before {
+        display: none; /* Sembunyikan garis panjang untuk mobile */
+    }
+
+    .step {
+        margin: 2px; /* Kurangi jarak antar elemen */
+    }
+
+    .icon {
+        width: 30px; /* Ukuran lebih kecil untuk mobile */
+        height: 30px;
+        font-size: 16px; /* Ikon lebih kecil */
+    }
+
+    h6 {
+        font-size: 8px; /* Ukuran teks lebih kecil */
+        text-align: center; /* Rata tengah teks */
+    }
+
+    footer img {
+        height: 23px;
+    }
+    /* Perkecil logo di layar kecil */
+    .logo-img {
+        height: 26px; /* Ukuran logo lebih kecil */
+    }
+}
+
