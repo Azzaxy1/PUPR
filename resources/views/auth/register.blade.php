@@ -24,11 +24,10 @@
 
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            min-height: 120vh;
             display: flex;
             align-items: center;
             position: relative;
-            overflow: hidden;
             padding: 2rem 0;
         }
 

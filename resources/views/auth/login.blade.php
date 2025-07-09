@@ -24,11 +24,10 @@
 
         body {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
+            min-height: 120vh;
             display: flex;
             align-items: center;
             position: relative;
-            overflow: hidden;
         }
 
         /* Floating Shapes Background */
