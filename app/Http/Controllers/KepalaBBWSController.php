@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PengaduanSelesaiMail;
+use App\Models\MStatusTab;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\TReportTab;
 use App\Models\User;
 use App\Models\TReportTransactionTab;
 use App\Models\TReportDocumentOutputTab;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+
 
 class KepalaBbwsController extends Controller
 {
@@ -15,16 +20,19 @@ class KepalaBbwsController extends Controller
     public function dashboard()
     {
         $totalActive   = TReportTransactionTab::where('status_active', 1)
-                            ->distinct('t_report_tab_id')
-                            ->count('t_report_tab_id');
+            ->distinct('t_report_tab_id')
+            ->count('t_report_tab_id');
         $totalFinished = TReportTransactionTab::where('m_status_tab_id', 4)
-                            ->where('status_active', 1)
-                            ->count();
+            ->where('status_active', 1)
+            ->count();
         $totalPemohon  = User::where('m_role_tab_id', 1)->count();
         $pending       = $totalActive - $totalFinished;
 
         return view('kepalabbws.dashboard', compact(
-            'totalActive', 'totalFinished', 'totalPemohon', 'pending'
+            'totalActive',
+            'totalFinished',
+            'totalPemohon',
+            'pending'
         ));
     }
 
@@ -42,7 +50,7 @@ class KepalaBbwsController extends Controller
     {
         $data = $request->validate([
             'name'                   => 'required|string|max:255',
-            'email'                  => 'required|email|unique:user_tab,email,'.auth()->id(),
+            'email'                  => 'required|email|unique:user_tab,email,' . auth()->id(),
             'number_identification'  => 'required|string',
             'number_phone'           => 'required|string',
             'address'                => 'required|string',
@@ -73,10 +81,10 @@ class KepalaBbwsController extends Controller
     /** Daftar pengaduan finalisasi (status_ref=4 & status_active=1) */
     public function pengaduanIndex()
     {
-        $reports = TReportTab::with(['user.details','documents','transactions.status','documentOutputs'])
-            ->whereHas('transactions', function($q) {
+        $reports = TReportTab::with(['user.details', 'documents', 'transactions.status', 'documentOutputs'])
+            ->whereHas('transactions', function ($q) {
                 $q->where('status_ref', 4)
-                  ->where('status_active', 1);
+                    ->where('status_active', 1);
             })
             ->latest()
             ->paginate(10);
@@ -87,7 +95,7 @@ class KepalaBbwsController extends Controller
     /** Form finalisasi & upload jawaban */
     public function pengaduanEdit(TReportTab $report)
     {
-        $report->load(['user.details','documents','transactions.status','documentOutputs']);
+        $report->load(['user.details', 'documents', 'transactions.status', 'documentOutputs']);
 
         return view('kepalabbws.pengaduan.edit', compact('report'));
     }
@@ -100,16 +108,16 @@ class KepalaBbwsController extends Controller
             'file'  => 'required|file|max:4096',
         ]);
 
-        DB::transaction(function() use ($request, $report) {
+        DB::transaction(function () use ($request, $report) {
             // nonaktifkan transaksi lama
             TReportTransactionTab::where('t_report_tab_id', $report->id)
                 ->update(['status_active' => 0]);
 
             // upload file jawaban
             $original = $request->file('file')->getClientOriginalName();
-            $filename = time().'_'.$original;
+            $filename = time() . '_' . $original;
             $path     = $request->file('file')
-                                ->storeAs("dokumen_jawaban/{$report->number_registration}", $filename);
+                ->storeAs("dokumen_jawaban/{$report->number_registration}", $filename);
 
             TReportDocumentOutputTab::create([
                 't_report_tab_id' => $report->id,
@@ -126,18 +134,30 @@ class KepalaBbwsController extends Controller
                 'notes'           => $request->notes,
                 'approve_dates'   => now(),
             ]);
+
+            // Pastikan data ter-reload dengan relasi yang lengkap
+            $report = TReportTab::with(['user', 'documentOutputs'])->find($report->id);
+
+            if ($report->user && $report->user->email) {
+                try {
+                    Mail::to($report->user->email)->send(new PengaduanSelesaiMail($report, $report->user));
+                    Log::info('Email berhasil dikirim ke: ' . $report->user->email . ' untuk pengaduan #' . $report->number_registration);
+                } catch (\Exception $mailError) {
+                    Log::error('Gagal kirim email ke ' . $report->user->email . ': ' . $mailError->getMessage());
+                }
+            }
         });
 
         return redirect()->route('kepalabbws.pengaduan.index')
-                         ->with('success', 'Pengaduan berhasil diselesaikan dan jawaban diunggah.');
+            ->with('success', 'Pengaduan berhasil diselesaikan dan jawaban diunggah.');
     }
 
     /** Riwayat transaksi finalisasi Kepala BBWS */
     public function history()
     {
-        $transactions = TReportTransactionTab::with(['report','status','officer'])
+        $transactions = TReportTransactionTab::with(['report', 'status', 'officer'])
             ->where('user_id', auth()->id())
-            ->orderBy('approve_dates','desc')
+            ->orderBy('approve_dates', 'desc')
             ->paginate(20);
 
         return view('kepalabbws.history.index', compact('transactions'));
