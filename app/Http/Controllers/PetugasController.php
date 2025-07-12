@@ -17,13 +17,13 @@ class PetugasController extends Controller
     {
         $totalReports  = TReportTab::count();
         $totalFinished = TReportTransactionTab::where('m_status_tab_id', 4)
-                          ->where('status_active', 1)
-                          ->count();
+            ->where('status_active', 1)
+            ->count();
         $totalPemohon  = User::where('m_role_tab_id', 1)->count();
 
         $reports = TReportTab::with('user.details', 'transactions.status')
-                    ->latest()
-                    ->paginate(10);
+            ->latest()
+            ->paginate(10);
 
         return view('petugas.dashboard', compact(
             'totalReports',
@@ -129,7 +129,7 @@ class PetugasController extends Controller
         ]);
 
         return redirect()->route('petugas.users.index')
-                         ->with('success', 'Pengguna baru berhasil dibuat.');
+            ->with('success', 'Pengguna baru berhasil dibuat.');
     }
 
     /**
@@ -164,8 +164,8 @@ class PetugasController extends Controller
             'email'         => $data['email'],
             'm_role_tab_id' => $data['m_role_tab_id'],
             'password'      => $data['password']
-                                ? bcrypt($data['password'])
-                                : $user->password,
+                ? bcrypt($data['password'])
+                : $user->password,
         ]);
 
         $user->details()->updateOrCreate(
@@ -212,7 +212,7 @@ class PetugasController extends Controller
     public function pengaduanEdit($id)
     {
         $report = TReportTab::with('user.details', 'documents', 'transactions.status')
-                  ->findOrFail($id);
+            ->findOrFail($id);
 
         return view('petugas.pengaduan.edit', compact('report'));
     }
@@ -245,7 +245,7 @@ class PetugasController extends Controller
         });
 
         return redirect()->route('petugas.pengaduan.index')
-                         ->with('success', 'Pengaduan berhasil ' . ($request->action === 'approve' ? 'diproses' : 'ditolak') . '.');
+            ->with('success', 'Pengaduan berhasil ' . ($request->action === 'approve' ? 'diproses' : 'ditolak') . '.');
     }
 
     /**
@@ -254,11 +254,11 @@ class PetugasController extends Controller
     public function final()
     {
         $finalReports = TReportTab::whereHas('transactions', function ($q) {
-                            $q->where('m_status_tab_id', 4)
-                              ->where('status_active', 1);
-                        })
-                        ->with('user.details', 'documentOutputs')
-                        ->paginate(10);
+            $q->where('m_status_tab_id', 4)
+                ->where('status_active', 1);
+        })
+            ->with('user.details', 'documentOutputs')
+            ->paginate(10);
 
         return view('petugas.final.index', compact('finalReports'));
     }
@@ -269,7 +269,7 @@ class PetugasController extends Controller
     public function finalPdf($id)
     {
         $report = TReportTab::with('user.details', 'documentOutputs')
-                  ->findOrFail($id);
+            ->findOrFail($id);
 
         return view('petugas.final.final_pdf', compact('report'));
     }
@@ -280,13 +280,13 @@ class PetugasController extends Controller
     public function history()
     {
         $transactions = TReportTransactionTab::with(['report', 'status', 'officer.role'])
-        ->where('status_ref', 2)           // langkah verifikasi Petugas Layanan
-        ->where('status_active', 1)        // hanya transaksi aktif
-        ->whereHas('officer.role', function($q) {
-            $q->where('title', 'Petugas Layanan');
-        })
-        ->orderBy('approve_dates', 'desc')
-        ->paginate(20);
+            ->where('status_ref', 2)           // langkah verifikasi Petugas Layanan
+            ->where('status_active', 1)        // hanya transaksi aktif
+            ->whereHas('officer.role', function ($q) {
+                $q->where('title', 'Petugas Layanan');
+            })
+            ->orderBy('approve_dates', 'desc')
+            ->paginate(20);
 
         return view('petugas.history.index', compact('transactions'));
     }

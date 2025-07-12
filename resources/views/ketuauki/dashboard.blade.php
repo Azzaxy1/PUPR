@@ -244,10 +244,6 @@
                         <i class="fas fa-user-tie me-1"></i>
                         {{ auth()->user()->role->title }}
                     </p>
-                    <p class="text-muted mb-0">
-                        <i class="fas fa-calendar-alt me-1"></i>
-                        {{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
-                    </p>
                 </div>
             </div>
         </div>
