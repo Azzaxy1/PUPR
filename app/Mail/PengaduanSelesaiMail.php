@@ -29,19 +29,17 @@ class PengaduanSelesaiMail extends Mailable
                 'pengaduan' => $this->pengaduan,
                 'pemohon' => $this->pemohon,
             ]);
+        // Attach semua dokumen output
+        if ($this->pengaduan->documentOutputs->count() > 0) {
+            foreach ($this->pengaduan->documentOutputs as $document) {
+                $filePath = storage_path('app/' . $document->filename);
 
-        // 📎 ATTACH SEMUA FILE DARI t_report_document_output_tab
-        foreach ($this->pengaduan->documentOutputs as $index => $file) {
-            $storagePath = storage_path('app/public/' . $file->filename);
-
-            if (file_exists($storagePath)) {
-                $email->attach($storagePath, [
-                    'as' => 'Dokumen_Resmi_' . ($index + 1) . '_' . basename($file->filename),
-                    'mime' => $this->getMimeType($file->filename),
-                ]);
-                Log::info('File attached successfully: ' . basename($file->filename));
-            } else {
-                Log::error('File not found: ' . $storagePath);
+                if (file_exists($filePath)) {
+                    $email->attach($filePath, [
+                        'as' => basename($document->filename),
+                        'mime' => $this->getMimeType($filePath),
+                    ]);
+                }
             }
         }
 
@@ -51,19 +49,25 @@ class PengaduanSelesaiMail extends Mailable
     /**
      * Deteksi MIME type berdasarkan ekstensi file
      */
-    private function getMimeType($filename)
+    private function getMimeType($filePath)
     {
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
-        return match ($extension) {
+        $mimeTypes = [
             'pdf' => 'application/pdf',
-            'jpg', 'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
             'doc' => 'application/msword',
             'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'xls' => 'application/vnd.ms-excel',
             'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            default => 'application/octet-stream',
-        };
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'txt' => 'text/plain',
+            'zip' => 'application/zip',
+            'rar' => 'application/x-rar-compressed',
+        ];
+
+        return $mimeTypes[$extension] ?? 'application/octet-stream';
     }
 }

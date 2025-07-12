@@ -135,7 +135,6 @@ class KepalaBbwsController extends Controller
                 'approve_dates'   => now(),
             ]);
 
-            // Pastikan data ter-reload dengan relasi yang lengkap
             $report = TReportTab::with(['user', 'documentOutputs'])->find($report->id);
 
             if ($report->user && $report->user->email) {
